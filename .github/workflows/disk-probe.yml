@@ -1,0 +1,19 @@
+name: unity-disk-speed-probe
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check disk and speed
+        run: |
+          set -euo pipefail
+          echo '--- disk ---'; df -h / /tmp
+          echo '--- sample ---'
+          URL='https://download.unity3d.com/download_unity/96d2fe17529c/MacEditorInstallerArm64/Unity-6000.3.29f1.pkg'
+          /usr/bin/time -f 'elapsed=%e sec' curl -sS -L --max-time 120 -r 0-104857599 -o /tmp/sample.bin "$URL"
+          ls -lh /tmp/sample.bin
+          xxd -p -l 4 /tmp/sample.bin

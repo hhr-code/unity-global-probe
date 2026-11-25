@@ -1,0 +1,23 @@
+name: unity-global-probe
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Probe official Unity global package
+        run: |
+          set -euo pipefail
+          URL='https://download.unity3d.com/download_unity/96d2fe17529c/MacEditorInstallerArm64/Unity-6000.3.29f1.pkg'
+          echo "Runner IP:"; curl -fsS https://api.ipify.org || true; echo
+          echo "HEAD:"; curl -sSIL --max-time 30 "$URL" | sed -n '1,30p'
+          echo "RANGE:"
+          curl -sS -L --max-time 60 -r 0-1023 -D /tmp/headers -o /tmp/probe.bin "$URL"
+          sed -n '1,30p' /tmp/headers
+          wc -c /tmp/probe.bin
+          xxd -p -l 16 /tmp/probe.bin
+          test "$(xxd -p -l 4 /tmp/probe.bin | tr -d '\n')" = "78617221"
+          echo "MAGIC_OK"
